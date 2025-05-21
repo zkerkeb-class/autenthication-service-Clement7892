@@ -14,7 +14,7 @@ router.get("/:id", userController.getUserById);
 router.put("/:id", userController.updateUser);
 router.post("/:id/change-password", userController.changePassword);
 
-router.get("/", managerMiddleware, userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 router.post("/", adminMiddleware, userController.createUser);
 router.delete("/:id", adminMiddleware, userController.deleteUser);
 

@@ -10,6 +10,7 @@ export interface IUser {
   companyId?: string; // ID de l'entreprise principale de l'utilisateur
   lastLogin?: Date;
   provider?: "local" | "google";
+  confirmationToken?: string; // Token de confirmation pour l'activation du compte
   createdAt?: Date;
   updatedAt?: Date;
 }

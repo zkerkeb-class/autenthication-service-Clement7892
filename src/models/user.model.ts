@@ -21,7 +21,7 @@ const UserSchema: Schema = new Schema(
     },
     active: {
       type: Boolean,
-      default: true
+      default: false
     },
     teams: [
       {
@@ -38,6 +38,9 @@ const UserSchema: Schema = new Schema(
       type: String,
       enum: ["local", "google"],
       default: "local"
+    },
+    confirmationToken: {
+      type: String
     }
   },
   { timestamps: true }

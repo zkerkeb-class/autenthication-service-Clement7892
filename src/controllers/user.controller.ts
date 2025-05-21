@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
+
 import * as userService from "../services/user.service";
 import { logger } from "../utils/logger";
 import { comparePassword } from "../utils/password.utils";
 import { IUser } from "../types";
+
 export const getAllUsers = async (
   req: Request,
   res: Response

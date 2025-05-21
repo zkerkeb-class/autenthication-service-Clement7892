@@ -1,12 +1,15 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+import config from ".";
 import User from "../models/user.model";
+
 import { logger } from "../utils/logger";
 import { generateSalt, hashPassword } from "../utils/password.utils";
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || "";
+const GOOGLE_CLIENT_ID = config.google.clientId;
+const GOOGLE_CLIENT_SECRET = config.google.clientSecret;
+const CALLBACK_URL = config.google.callback;
 
 passport.serializeUser((user: any, done) => {
   done(null, user.id);

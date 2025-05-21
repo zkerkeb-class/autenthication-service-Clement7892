@@ -1,0 +1,623 @@
+openapi: 3.0.0
+info:
+  title: Auth Microservice API
+  version: 1.0.0
+  description: Documentation de l'API du microservice d'authentification pour le CRM AndreClaveria
+  contact:
+    name: Support
+    email: support@andreclaveria.fr
+
+servers:
+  - url: http://localhost:3000
+    description: Serveur de développement
+  - url: https://api.andreclaveria.fr/auth
+    description: Serveur de production
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        _id:
+          type: string
+          description: ID auto-généré de l'utilisateur
+        firstName:
+          type: string
+          description: Prénom de l'utilisateur
+        lastName:
+          type: string
+          description: Nom de famille de l'utilisateur
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+        password:
+          type: string
+          format: password
+          description: Mot de passe de l'utilisateur (haché)
+        role:
+          type: string
+          enum: [admin, manager, user]
+          default: user
+          description: Rôle de l'utilisateur
+        active:
+          type: boolean
+          default: false
+          description: Statut d'activation du compte
+        teams:
+          type: array
+          items:
+            type: string
+          description: IDs des équipes auxquelles l'utilisateur appartient
+        companyId:
+          type: string
+          description: ID de l'entreprise à laquelle l'utilisateur est associé
+        lastLogin:
+          type: string
+          format: date-time
+          description: Date de la dernière connexion
+        provider:
+          type: string
+          enum: [local, google]
+          default: local
+          description: Fournisseur d'authentification
+        confirmationToken:
+          type: string
+          description: Token pour la confirmation de l'email
+        createdAt:
+          type: string
+          format: date-time
+          description: Date de création du compte
+        updatedAt:
+          type: string
+          format: date-time
+          description: Date de dernière mise à jour
+      example:
+        email: user@example.com
+        firstName: Jean
+        lastName: Dupont
+        role: user
+        active: true
+        teams: ["team123", "team456"]
+        companyId: "company789"
+        provider: "local"
+
+    LoginRegisterInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      example:
+        email: user@example.com
+        password: "Password123!"
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      example:
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          _id: "60d21b4667d0d8992e610c85"
+          email: user@example.com
+          firstName: Jean
+          lastName: Dupont
+          role: user
+          active: true
+
+    EmailInput:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+      example:
+        email: user@example.com
+
+    TokenInput:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+      example:
+        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    VerifyPasswordInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      example:
+        email: user@example.com
+        password: "Password123!"
+
+    VerifyPasswordResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+      example:
+        valid: true
+
+    CreateUserInput:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [admin, manager, user]
+        teams:
+          type: array
+          items:
+            type: string
+        companyId:
+          type: string
+      example:
+        firstName: Jean
+        lastName: Dupont
+        email: user@example.com
+        password: "Password123!"
+        role: user
+        teams: ["team123"]
+        companyId: "company789"
+
+    UpdateUserInput:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [admin, manager, user]
+        active:
+          type: boolean
+        teams:
+          type: array
+          items:
+            type: string
+        companyId:
+          type: string
+      example:
+        firstName: Jean
+        lastName: Martin
+        role: manager
+        teams: ["team123", "team456"]
+
+    ChangePasswordInput:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+      example:
+        currentPassword: "OldPassword123!"
+        newPassword: "NewPassword456!"
+
+    GenericSuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      example:
+        success: true
+        message: "Opération réussie"
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      example:
+        message: "Une erreur est survenue"
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/login-register:
+    post:
+      summary: Connecte un utilisateur existant ou inscrit un nouvel utilisateur
+      tags:
+        - Authentification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRegisterInput"
+      responses:
+        "200":
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Données d'entrée invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Authentification échouée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/auth/resend-confirmation:
+    post:
+      summary: Renvoie l'email de confirmation
+      tags:
+        - Authentification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailInput"
+      responses:
+        "200":
+          description: Email renvoyé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "400":
+          description: Données d'entrée invalides ou compte déjà activé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "404":
+          description: Utilisateur non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+
+  /api/auth/verify-email:
+    post:
+      summary: Vérifie et active le compte utilisateur
+      tags:
+        - Authentification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenInput"
+      responses:
+        "200":
+          description: Email vérifié avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "400":
+          description: Token invalide ou expiré
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+
+  /api/auth/verify-password:
+    post:
+      summary: Vérifie si le mot de passe correspond à l'email
+      tags:
+        - Authentification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyPasswordInput"
+      responses:
+        "200":
+          description: Résultat de la vérification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VerifyPasswordResponse"
+        "400":
+          description: Données d'entrée invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/users:
+    get:
+      summary: Récupère tous les utilisateurs
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Liste des utilisateurs récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      summary: Crée un nouvel utilisateur
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Données d'entrée invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/users/{id}:
+    get:
+      summary: Récupère un utilisateur par son ID
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de l'utilisateur
+      responses:
+        "200":
+          description: Utilisateur récupéré avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Utilisateur non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      summary: Met à jour un utilisateur
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de l'utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserInput"
+      responses:
+        "200":
+          description: Utilisateur mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Utilisateur non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      summary: Supprime un utilisateur
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de l'utilisateur
+      responses:
+        "200":
+          description: Utilisateur supprimé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "404":
+          description: Utilisateur non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/users/{id}/change-password:
+    post:
+      summary: Change le mot de passe d'un utilisateur
+      tags:
+        - Utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de l'utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "200":
+          description: Mot de passe changé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+        "400":
+          description: Données d'entrée invalides
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Mot de passe actuel incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Utilisateur non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Erreur serveur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

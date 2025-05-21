@@ -6,14 +6,10 @@ import {
   generateSalt,
   hashPassword
 } from "../utils/password.utils";
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+import config from "../config";
 
-interface RegisterUserParams {
-  email: string;
-  password: string;
-  role: string;
-  active: boolean;
-}
+const JWT_SECRET = config.jwt.secret;
+const NOTIFICATION_URL = config.server.notification_url;
 
 interface AuthResponse {
   user: {
@@ -27,7 +23,6 @@ interface AuthResponse {
   token: string;
 }
 
-// Ajoutez cette nouvelle fonction à votre fichier auth.service.ts
 export const loginOrRegister = async (
   email: string,
   password: string
@@ -36,12 +31,10 @@ export const loginOrRegister = async (
     const user = await User.findOne({ email });
 
     if (user) {
-      // Vérifiez si le compte est actif
       if (!user.active) {
         throw new Error("Compte désactivé. Contactez l'administrateur");
       }
 
-      // Vérifiez le mot de passe
       const cleanPassword = password.trim();
       if (!cleanPassword) {
         throw new Error("Mot de passe requis");
@@ -52,7 +45,6 @@ export const loginOrRegister = async (
         throw new Error("Mot de passe incorrect");
       }
 
-      // Créez le token JWT
       const token = jwt.sign(
         {
           userId: user._id,
@@ -76,28 +68,53 @@ export const loginOrRegister = async (
         },
         token
       };
-    }
-    // Cas 2: L'utilisateur n'existe pas, créons-le
-    else {
+    } else {
       logger.info(`Nouvel utilisateur, création du compte: ${email}`);
 
       const salt = generateSalt();
       const hashedPassword = hashPassword(password, salt);
 
-      // Créer un nouvel utilisateur
+      const confirmationToken = jwt.sign({ email }, JWT_SECRET, {
+        expiresIn: "24h"
+      });
+
       const newUser = await User.create({
         email,
         password: hashedPassword,
         role: "user",
-        active: true
+        active: false,
+        confirmationToken: confirmationToken
       });
 
-      // Créer le token JWT
+      try {
+        const response = await fetch(`${NOTIFICATION_URL}/send-confirmation`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: newUser.email,
+            confirmationToken: confirmationToken
+          })
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+          logger.error("Échec de l'envoi de l'email de confirmation", result);
+        }
+      } catch (error) {
+        logger.error(
+          "Erreur lors de l'appel au service de notification",
+          error
+        );
+      }
+
       const token = jwt.sign(
         {
           userId: newUser._id,
           email: newUser.email,
-          role: newUser.role
+          role: newUser.role,
+          active: false
         },
         JWT_SECRET,
         { expiresIn: 3600 }
@@ -110,7 +127,7 @@ export const loginOrRegister = async (
           lastName: newUser.lastName || "",
           email: newUser.email,
           role: newUser.role,
-          active: newUser.active
+          active: false
         },
         token
       };

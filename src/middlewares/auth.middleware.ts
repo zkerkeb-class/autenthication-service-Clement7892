@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+
 import { logger } from "../utils/logger";
-import User from "../models/user.model";
+import config from "../config";
 
 interface DecodedToken {
   userId: string;
@@ -30,7 +31,7 @@ export const authMiddleware = (
       return;
     }
 
-    const jwtSecret = process.env.JWT_SECRET || "your-default-secret";
+    const jwtSecret = config.jwt.secret;
     const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
 
     req.jwtUser = decoded; // Utiliser jwtUser au lieu de user
