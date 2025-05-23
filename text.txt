@@ -1,6 +1,6 @@
 // Arborescence du projet
 /*
-authentication-service-AndreClaveria/
+authentication-service-Clement7892/
 ├── src/
 │   ├── config/
 │   │   ├── db.config.ts
@@ -47,9 +47,9 @@ authentication-service-AndreClaveria/
 
 // package.json
 {
-  "name": "authentication-service-andreclaveria",
+  "name": "authentication-service-clement7892",
   "version": "1.0.0",
-  "description": "Service d'authentification pour le CRM AndreClaveria",
+  "description": "Service d'authentification pour le CRM Clement7892",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
@@ -173,7 +173,7 @@ import { logger } from '../utils/logger';
 
 const connectDB = async (): Promise<void> => {
   try {
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/auth-andreclaveria';
+    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/auth-clement7892';
     await mongoose.connect(mongoURI);
     logger.info('MongoDB connected successfully');
   } catch (error) {
@@ -757,7 +757,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - MONGO_URI=mongodb://mongo:27017/auth-andreclaveria
+      - MONGO_URI=mongodb://mongo:27017/auth-clement7892
       - JWT_SECRET=votre-secret-jwt
     depends_on:
       - mongo
@@ -788,7 +788,7 @@ volumes:
 /*
 NODE_ENV=development
 PORT=3000
-MONGO_URI=mongodb://localhost:27017/auth-andreclaveria
+MONGO_URI=mongodb://localhost:27017/auth-clement7892
 JWT_SECRET=votre-secret-jwt
 LOG_LEVEL=info
 */

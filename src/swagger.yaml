@@ -2,15 +2,15 @@ openapi: 3.0.0
 info:
   title: Auth Microservice API
   version: 1.0.0
-  description: Documentation de l'API du microservice d'authentification pour le CRM AndreClaveria
+  description: Documentation de l'API du microservice d'authentification pour le CRM Clement7892
   contact:
     name: Support
-    email: support@andreclaveria.fr
+    email: support@clement7892.fr
 
 servers:
   - url: http://localhost:3000
     description: Serveur de développement
-  - url: https://api.andreclaveria.fr/auth
+  - url: https://api.clement7892.fr/auth
     description: Serveur de production
 
 components:
