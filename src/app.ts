@@ -53,7 +53,6 @@ setupSwagger(app);
 
 app.use("/api", routes);
 
-// Health check
 app.get("/health", async (req: Request, res: Response) => {
   const status = {
     status: "UP",
